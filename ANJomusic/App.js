@@ -4,6 +4,7 @@ import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Image  } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
+import { ProgressBar } from 'react-native-web';
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,10 +18,43 @@ export default function App() {
             style={styles.musicImage}
             />
         </View>
+
+        <View>
+          <Text style={[styles.songContent, styles.songTitle]}>
+            Titulo da Musica
+          </Text>
+          <Text style={[styles.songContent, styles.songArtist]}>
+            Autor da musica 
+          </Text>
+      </View>
+    
+      <View>
+        <Slider
+        style={styles.prpgressBar}
+        value={10}
+        minimumValue={0}
+        maxmumValue={100}
+        thumbTinColor='#FFD369'
+        minimumTrackTintColor='ffd369'
+        maximumTrackTintColor='#fff'
+        onSlidingComplete={() => {}}
+        />
+        <View style={styles.progressLevelDuration}>
+            <Text style={styles.progressLabelText}>00:00</Text>
+            <Text style={styles.progressLabelText}>00:00</Text>
+          </View>      
       </View>
 
-      <View>
-        <Slider/>
+      <View style={styles.musicControlContainer}>
+        <TouchableOpacity>
+          <Ionicons name='play-skip-back-outline' size={35} color="#FFD369" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Ionicons name='pause-circle' size={75} color="#FFD369" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Ionicons name='play-skip-forward-outline' size={35} color="#FFD369" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
@@ -89,4 +123,37 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 15
   },
+  songContent: {
+    textAlign: 'center',
+    color: '#EEEEEE',
+  },
+  songTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  songArtist: {
+    fontSize: 16,
+    fontWeight: '300',
+  },
+  ProgressBar: {
+    width: 350,
+    height: 40,
+    marginTop: 20,
+  },
+  progressLevelDuration: {
+    width: 340,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressLabelText: {
+    color: 'fff',
+    fontWeight: '500',
+  },
+  musicControlContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '60%',
+    marginTop: 10,
+  }
 });
