@@ -3,46 +3,43 @@ import { StatusBar } from 'expo-status-bar';
 import { Animated, Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image, FlatList  } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
+import { Audio } from 'expo-av';
 import songs from './model/data';
 
 const { width, height } = Dimensions.get('window');
 
 export default function App() {
   const[sound, setSound] = useState(null);
-  const [songIndex, setSoungIdex] = useState(0);
+  const[songIndex, setSongIndex] = useState(0);
   const[songStatus, setSongStatus] = useState(null);
   const[isPlaying, setIsPlaying] = useState(false);
-  const[isLooping,setIsLooping] = useState(false);
+  const[isLooping, setIsLooping] = useState(false);
 
   const songSlider = useRef(null);
-  const ScrollX = useRef(new Animated.Value(0)).current;
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-      scrollX.addListener (({value}) => {
-        const index = Math.round(value / width);
-         //console.log(`ScrollX : ${value}`);
-        //console.log(index);
-        setSoungIdex(index);
-      });
+    scrollX.addListener(({value}) => {
+      const index = Math.round(value / width);
+      // console.log(`ScrollX: ${value}`);
+      // console.log(index);
+      setSongIndex(index);
+    });
   }, []);
-  
-    
 
   const renderSongs = ({ item, index }) => {
     return (
       <Animated.View style={styles.mainImageWrapper}>
         <View style={[styles.imageWrapper, styles.elevation]}>
-      <Image source={item.artwork} style={styles.musicImage} />
-    </View>
-  </Animated.View>
-
+          <Image source={item.artwork} style={styles.musicImage} />
+        </View>
+      </Animated.View>
     )
   };
+
   
   const loadSound = async () => {
-    const { sound } = await Audio.Sound.createAsync(
-      songs[songIndex].url
-    );
+    const { sound } = await Audio.Sound.createAsync(songs[songIndex].url );
     setSound(sound);
     const status = await sound.getStatusAsync();
     await sound.setIsLoopingAsync(isLooping);
@@ -60,7 +57,7 @@ export default function App() {
         sound.unloadAsync();
       }
     }
-  }, [soungIndex]);
+  }, [songIndex]);
 
   const handlePlayPause = async () => {
     if (isPlaying) {
@@ -68,78 +65,94 @@ export default function App() {
     } else {
       await play();
     }
-  }
+  };
 
   const play = async () => {
     if (sound) {
       setIsPlaying(true);
       await sound.playAsync();
     }
-  }
+  };
 
   const pause = async () => {
     if (sound) {
       setIsPlaying(false);
       await sound.pauseAsync();
     }
-  }
+  };
 
   const skipToNext = () => {
-
+    songSlider.current.scrollToOffset({
+      offset: ( songIndex + 1) * width
+    })
   }
 
   const skipToPrevious = () => {
+    songSlider.current.scrollToOffset({
+      offset: ( songIndex - 1) * width
+    })
 
   }
 
   const stop = async () => {
-
+    if (sound) {
+      await sound.stopAsync();
+      sound.unloadAsync();
+      await loadSound();
+    }
   }
 
   const repeat = async (value) => {
-
+    setIsLooping(value);
+    await sound.setIsLoopingAsync(value);
   }
 
-  return ( 
+const updatePosition = async () => {
+  
+}
+
+useEffect(() => {
+  const intervalId = setinterval(updatePosition, 500);
+  return () => clearInterval(intervalId);
+}, [sound, isPlaying]);
+
+
+  return (
     <SafeAreaView style={styles.container}>
       <View style={styles.main}>
 
-        <Animated.FlatList
+        <Animated.FlatList 
+        ref={songSlider}
           data={songs}
           keyExtractor={item => item.id}
           renderItem={renderSongs}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onScroll={Animated.event(
-              [
-                {
-                  nativeEvent: {
-                    contentOffset: {x : scrollX},
-                  }
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [
+              {
+                nativeEvent: {
+                  contentOffset: { x : scrollX },
                 }
-              ],
-              { useNativeDriver: true }
-            )}
-        /> 
+              }
+            ],
+            { useNativeDriver: true }
+          )}
+        />      
 
       <View>
-        <Text style={[styles.songContent, styles.songTitle]}>
-          {songs[songIndex].title}
-          </Text>
-        <Text style={[styles.songContent, styles.songArtist]}>
-         {songs[songIndex].artist}
-          
-        </Text>
+        <Text style={[styles.songContent, styles.songTitle]}>{songs[songIndex].title}</Text>
+        <Text style={[styles.songContent, styles.songArtist]}>{songs[songIndex].artist}</Text>
       </View>
 
       <View>
         <Slider 
           style={styles.progressBar}
-          value={10}
+          value={songStatus ? songStatus.positionMills : 0}
           minimumValue={0}
-          maximumValue={100}
+          maximumValue={songStatus ? songStatus.durationMills : 0}
           thumbTintColor='#FFD369'
           minimumTrackTintColor='#FFD369'
           maximumTrackTintColor='#fff'
@@ -160,7 +173,7 @@ export default function App() {
           <Ionicons name='pause-circle' size={75} color="#FFD369" />
           </TouchableOpacity>
           
-          <TouchableOpacity onpress={skipToNext}>
+          <TouchableOpacity onPress={skipToNext}>
           <Ionicons name='play-skip-forward-outline' size={35} color="#FFD369" />
           </TouchableOpacity>
         </View>
@@ -202,11 +215,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
- mainImageWrapper : {
-  width: width,
-  justifyContent: 'center',
-  alignItems: 'center',
- }, 
+  mainImageWrapper: {
+    width: width,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   footer: {
     width: width,
     alignItems: 'center',

@@ -6,7 +6,7 @@ criar o projeto ( so usa quando cria dps nunca mais):
 npx create-expo-app@latest ANJomusic --template blank
 
 
-cd ANJomusic
+cd ANJomusic  
 npx expo install react-dom react-native-web @expo/metro-runtime
 npx expo install @react-native-community/slider
 npx expo install expo-av
@@ -14,3 +14,4 @@ npx expo install expo-av
 npm i
 
 npx expo start --localhost --android
+
